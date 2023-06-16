@@ -1,9 +1,28 @@
-﻿var builder = WebApplication.CreateBuilder(args);
+﻿using MvcMovie.Data;
+using MvcMovie.Models;
+using Microsoft.EntityFrameworkCore;
+
+var builder = WebApplication.CreateBuilder(args);
 
 // Add services to the container.
 builder.Services.AddControllersWithViews();
 
+
+string cnnString = builder.Configuration.GetConnectionString("Default")!;
+builder.Services.AddDbContext<MvcMovieContext>(options =>
+{
+    options.UseMySql(cnnString, ServerVersion.AutoDetect(cnnString));
+});
+
+
 var app = builder.Build();
+
+using (var scope = app.Services.CreateScope())
+{
+    var services = scope.ServiceProvider;
+
+    SeedData.Initialize(services);
+}
 
 // Configure the HTTP request pipeline.
 if (!app.Environment.IsDevelopment())
@@ -22,7 +41,8 @@ app.UseAuthorization();
 
 app.MapControllerRoute(
     name: "default",
-    pattern: "{controller=Home}/{action=Index}/{id?}");
+    //pattern: "{controller=Home}/{action=Index}/{id?}");
+    pattern: "{controller=Movies}/{action=Index}/{id?}");
 
 app.Run();
 
